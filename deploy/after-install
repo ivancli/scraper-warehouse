@@ -1,0 +1,38 @@
+#!/bin/bash
+
+set -ex
+
+
+PROJECT_DIR=/home/sites/public_html/scraper-warehouse
+
+# If there is no /var/www folder, then the server has not been provisioned
+# correctly and we exit out
+if [ ! -d ${PROJECT_DIR} ]; then
+	mkdir ${PROJECT_DIR}
+fi
+
+# Copy the application files across with rsync
+rsync --delete-before --verbose --archive /tmp/release/ ${PROJECT_DIR}/ > /var/www/deploy.log
+
+# Move the .env file to the correct place based on the filepath
+mv -f ./${APPLICATION_NAME}.env ${PROJECT_DIR}/.env
+
+mv -f ./deploy/nginx.conf /etc/nginx/conf.d/scraper-warehouse.conf
+
+
+# Clean up some files
+rm -f ${PROJECT_DIR}/appspec.yml
+rm -rf ${PROJECT_DIR}/deploy
+
+# Ensure correct permissions on files and folders (prevents Wordpress from writing files)
+find ${PROJECT_DIR}/ -type d -exec chmod 755 {} \;
+find ${PROJECT_DIR}/ -type f -exec chmod 644 {} \;
+
+chown sites:sites ${PROJECT_DIR} -R
+
+service nginx restart
+
+service php-fpm restart
+
+php ${PROJECT_DIR}/artisan key:generate
+

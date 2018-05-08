@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -ex
+
+# make sure release directory exists and is empty
+if [ -d /tmp/release ]; then
+    rm -rf /tmp/release
+fi
+mkdir -vp /tmp/release
+
+#copy environment file release folder
+aws s3 cp s3://server-bucket-configs/.env/$APPLICATION_NAME/develop/.env $APPLICATION_NAME.env
+
+aws s3 cp s3://server-bucket-configs/nginx/$APPLICATION_NAME/develop.conf ./deploy/nginx.conf

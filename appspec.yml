@@ -1,0 +1,12 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /tmp/release
+hooks:
+  BeforeInstall:
+    - location: deploy/before-install
+      timeout: 10
+  AfterInstall:
+    - location: deploy/after-install
+      timeout: 600
